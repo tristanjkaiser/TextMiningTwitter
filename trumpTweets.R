@@ -3,17 +3,20 @@ library(tm)
 library(qdap)
 library(wordcloud)
 library(RCurl)
+library(httr)
+library(devtools)
 
 # Twitter Authentication --------------------------------------
-twitter.Auth <- c()
 
-setup_twitter_oauth(twitter.Auth)
+
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
 
 # Functions ---------------------------------------------------
 
 # Function to clean corpus
 clean_corpus <- function(corpus){
   corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, stripWhitespace)
   corpus <- tm_map(corpus, removeNumbers)
   corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "Trump", "trump", "amp"))
   corpus <- tm_map(corpus, content_transformer(tolower))
@@ -35,7 +38,7 @@ Sys.setlocale('LC_ALL','C')
 # Analysis ----------------------------------------------------
 
 # Gather Tweets
-trumpTweets <- searchTwitter("#Trump", since = "2016-11-17", until = "2016-11-18", n = 1000)
+trumpTweets <- searchTwitter("#Trump", since = "2016-11-18", until = "2016-11-19", n = 1000)
 
 # Set up tweets as a dataframe, and reduce to only id & text
 df.trumpTweets <- do.call("rbind", lapply(trumpTweets, as.data.frame))
@@ -46,8 +49,8 @@ corpus.trumpTweets <- VCorpus(DataframeSource(df.reduced.trumpTweets), readerCon
 corpus.trumpTweets <- clean_corpus(corpus.trumpTweets)
 
 # Set up Term Document Matrix & get freqency of bigram terms
-tdm.TrumpTweets <- TermDocumentMatrix(corpus.trumpTweets, control = list(tokenize = bigram.tokenizer))
-tdm.m.trumpTweets <- as.matrix(tdm.TrumpTweets)
+tdm.trumpTweets <- TermDocumentMatrix(corpus.trumpTweets, control = list(tokenize = bigram.tokenizer))
+tdm.m.trumpTweets <- as.matrix(tdm.trumpTweets)
 
 tdm.freq.trumpTweets <- sort(rowSums(tdm.m.trumpTweets), decreasing = TRUE)
 tdm.df.trumpTweets <- data.frame(word = names(tdm.freq.trumpTweets), freq = tdm.freq.trumpTweets)
