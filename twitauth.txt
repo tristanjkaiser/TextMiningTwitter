@@ -1,4 +1,0 @@
-twitter.Auth <- c(api_key = "zCiXSFqLhBiwKZJQO7Mo1ftb4",
-               api_secret =	"L4JFpxGa77BSZi5f9sdsslJTBvC7Z5X6dxrGXPWfCs9tasvDvD",
-               access_token = "1477661306-cCgdZ2BkN7f0u5UCt7R4yJ6zcdhLPbQ6bLbY48G",
-               access_token_secret = "g3VOz6tv0WR0wgSC09VsBErKBCmRWOWAH0O3VykZDHgxK")
