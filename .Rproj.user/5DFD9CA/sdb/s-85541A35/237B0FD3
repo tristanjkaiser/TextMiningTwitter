@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(twitteR)\nlibrary(tm)\nlibrary(qdap)\nlibrary(wordcloud)\nlibrary(RCurl)\nlibrary(httr)\nlibrary(devtools)\n\n# Twitter Authentication --------------------------------------\n\n\nsetup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)\n\n# Functions ---------------------------------------------------\n\n# Function to clean corpus\nclean_corpus <- function(corpus){\n  corpus <- tm_map(corpus, removePunctuation)\n  corpus <- tm_map(corpus, stripWhitespace)\n  corpus <- tm_map(corpus, removeNumbers)\n  corpus <- tm_map(corpus, removeWords, c(stopwords(\"en\"), \"Trump\", \"trump\", \"amp\"))\n  corpus <- tm_map(corpus, content_transformer(tolower))\n  return(corpus)\n}\n\n# Function for bigram token maker\nbigram.tokenizer <- function(x)\n   unlist(lapply(ngrams(words(x), 2), paste, collapse = \" \"), use.names = FALSE)\n\n# Additional Settings -----------------------------------------\n\n# Set so text strings will not be factors of categories\noptions(stringsAsFactors = FALSE) \n\n# Prevent errors with tweets in different languages\nSys.setlocale('LC_ALL','C')\n\n# Analysis ----------------------------------------------------\n\n# Gather Tweets\ntrumpTweets <- searchTwitter(\"#Trump\", since = \"2016-11-18\", until = \"2016-11-19\", n = 1000)\n\n# Set up tweets as a dataframe, and reduce to only id & text\ndf.trumpTweets <- do.call(\"rbind\", lapply(trumpTweets, as.data.frame))\ndf.reduced.trumpTweets <- data.frame(id = df.trumpTweets$id, text = df.trumpTweets$text)\ncustom.reader <- readTabular(mapping=list(content=\"text\", id=\"id\"))\ncorpus.trumpTweets <- VCorpus(DataframeSource(df.reduced.trumpTweets), readerControl=list(reader=custom.reader))\n\ncorpus.trumpTweets <- clean_corpus(corpus.trumpTweets)\n\n# Set up Term Document Matrix & get freqency of bigram terms\ntdm.trumpTweets <- TermDocumentMatrix(corpus.trumpTweets, control = list(tokenize = bigram.tokenizer))\ntdm.m.trumpTweets <- as.matrix(tdm.trumpTweets)\n\ntdm.freq.trumpTweets <- sort(rowSums(tdm.m.trumpTweets), decreasing = TRUE)\ntdm.df.trumpTweets <- data.frame(word = names(tdm.freq.trumpTweets), freq = tdm.freq.trumpTweets)\n\ndisplay.brewer.all()\npal <- brewer.pal(8, \"Blues\")\npal <- pal[-(1:2)]\n\nset.seed(1)\nwordcloud(tdm.df.trumpTweets$word,tdm.df.trumpTweets$freq,max.words=50, random.order=FALSE, colors=pal)\n\n",
+    "created" : 1479692393656.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "643117873",
+    "id" : "237B0FD3",
+    "lastKnownWriteTime" : 1479693761,
+    "last_content_update" : 1479693761080,
+    "path" : "C:/Users/Tristan/Desktop/Rfiles/TextMiningTwitter/trumpTweets.R",
+    "project_path" : "trumpTweets.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
