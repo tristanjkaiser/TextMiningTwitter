@@ -11,6 +11,10 @@ library(RCurl)
 library(httr)
 library(devtools)
 library(RColorBrewer)
+library(purrr)
+library(ggplot2)
+library(ggthemes)
+install.packages("ggthemes")
 # Twitter Authentication --------------------------------------
 
 
@@ -43,24 +47,42 @@ options(stringsAsFactors = FALSE)
 Sys.setlocale('LC_ALL','C')
 
 # Analysis ----------------------------------------------------
-
-# Gather Tweets
-trumpTweets <- searchTwitter("#Trump", since = "2016-11-26", until = "2016-11-27", n = 1000)
-
-# Set up tweets as a dataframe, and reduce to only id & text
-df.trumpTweets <- do.call("rbind", lapply(trumpTweets, as.data.frame))
-df.reduced.trumpTweets <- data.frame(id = df.trumpTweets$id, text = df.trumpTweets$text)
 custom.reader <- readTabular(mapping=list(content="text", id="id"))
-corpus.trumpTweets <- VCorpus(DataframeSource(df.reduced.trumpTweets), readerControl=list(reader=custom.reader))
 
+# Function to gather tweets & convert to data frame
+gather_tweets <- function(searchTerm, dateStart, dateEnd, maxTweets)
+{
+  tweets <- searchTwitter(searchTerm, since = dateStart, until = dateEnd, n = maxTweets)
+  return(do.call("rbind",lapply(tweets,as.data.frame)))
+}
+
+# Get the tweets
+trumpTweets <- gather_tweets("Trump", "2016-11-26", "2016-11-27", 1000)
+hillaryTweets <- gather_tweets("Hillary", "2016-11-26", "2016-11-27", 1000)
+
+# Reduce and create corpus
+trumpTweets <- data.frame(id = trumpTweets$id, text = trumpTweets$text)
+hillaryTweets <- data.frame(id = hillaryTweets$id, text = hillaryTweets$text)
+
+corpus.trumpTweets <- VCorpus(DataframeSource(trumpTweets), readerControl=list(reader=custom.reader))
+corpus.hillaryTweets <- VCorpus(DataframeSource(hillaryTweets), readerControl=list(reader=custom.reader))
+
+# Clean the corpus
 corpus.trumpTweets <- clean_corpus(corpus.trumpTweets)
+corpus.hillaryTweets <- clean_corpus(corpus.hillaryTweets)
 
-# Set up Term Document Matrix & get freqency of bigram terms
+# Set up Term Document Matrix
 tdm.trumpTweets <- TermDocumentMatrix(corpus.trumpTweets)
-tdm.m.trumpTweets <- as.matrix(tdm.trumpTweets)
+tdm.trumpTweets <- as.matrix(tdm.trumpTweets)
 
-tdm.freq.trumpTweets <- sort(rowSums(tdm.m.trumpTweets), decreasing = TRUE)
-tdm.df.trumpTweets <- data.frame(word = names(tdm.freq.trumpTweets), freq = tdm.freq.trumpTweets)
+tdm.hillaryTweets <- TermDocumentMatrix(corpus.hillaryTweets)
+tdm.hillaryTweets <- as.matrix(tdm.hillaryTweets)
+
+freq.trumpTweets <- sort(rowSums(tdm.trumpTweets), decreasing = TRUE)
+explore.trumpTweets <- data.frame(word = names(freq.trumpTweets), frequency = freq.trumpTweets)
+
+freq.hillaryTweets <- sort(rowSums(tdm.hillaryTweets), decreasing = TRUE)
+wc.hillaryTweets <- data.frame(word = names(freq.hillaryTweets), freq = freq.hillaryTweets)
 
 # Choose colors for Wordcloud
 display.brewer.all()
@@ -69,4 +91,4 @@ pal <- pal[-(1:2)]
 
 # Wordcloud of tweets
 set.seed(1)
-wordcloud(tdm.df.trumpTweets$word,tdm.df.trumpTweets$freq,max.words=50, random.order=FALSE, colors=pal)
+wordcloud(wc.hillaryTweets$word,wc.trumpTweets$freq,max.words=50, random.order=FALSE, colors=pal)
