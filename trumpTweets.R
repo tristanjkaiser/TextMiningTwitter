@@ -2,7 +2,7 @@
 # 11/28/2017
 # Next Steps:
 # Use dplyr & functions to reduce code
-
+library(plyr)
 library(twitteR)
 library(tm)
 library(qdap)
@@ -14,23 +14,25 @@ library(RColorBrewer)
 # Twitter Authentication --------------------------------------
 
 
+api_key <- 'CRDsansBY3AzDrfDSjl4YeR9m'
+api_secret <- 'mjpQq0Tk4VDgukoYBhlFqIP4uCbsRbiNjtV6qoT4jTyRJp24oE'
+access_token <- '1477661306-cCgdZ2BkN7f0u5UCt7R4yJ6zcdhLPbQ6bLbY48G'
+access_token_secret <-'g3VOz6tv0WR0wgSC09VsBErKBCmRWOWAH0O3VykZDHgxK'
 setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
 
 # Functions ---------------------------------------------------
 
 # Function to clean corpus
+
 clean_corpus <- function(corpus){
-  corpus <- tm_map(corpus, removePunctuation)
-  corpus <- tm_map(corpus, stripWhitespace)
-  corpus <- tm_map(corpus, removeNumbers)
-  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "Trump", "trump", "amp"))
-  corpus <- tm_map(corpus, content_transformer(tolower))
+  corpus <- corpus %>%
+    tm_map(removePunctuation) %>%
+    tm_map(stripWhitespace) %>%
+    tm_map(removeNumbers) %>%
+    tm_map(content_transformer(tolower)) %>%
+    tm_map(removeWords, c(stopwords("en"), "trump", "amp"))
   return(corpus)
 }
-
-# Function for bigram token maker
-bigram.tokenizer <- function(x)
-   unlist(lapply(ngrams(words(x), 2), paste, collapse = " "), use.names = FALSE)
 
 # Additional Settings -----------------------------------------
 
@@ -68,5 +70,3 @@ pal <- pal[-(1:2)]
 # Wordcloud of tweets
 set.seed(1)
 wordcloud(tdm.df.trumpTweets$word,tdm.df.trumpTweets$freq,max.words=50, random.order=FALSE, colors=pal)
-
-# 
