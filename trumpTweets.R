@@ -17,11 +17,6 @@ library(ggthemes)
 install.packages("ggthemes")
 # Twitter Authentication --------------------------------------
 
-
-api_key <- 'CRDsansBY3AzDrfDSjl4YeR9m'
-api_secret <- 'mjpQq0Tk4VDgukoYBhlFqIP4uCbsRbiNjtV6qoT4jTyRJp24oE'
-access_token <- '1477661306-cCgdZ2BkN7f0u5UCt7R4yJ6zcdhLPbQ6bLbY48G'
-access_token_secret <-'g3VOz6tv0WR0wgSC09VsBErKBCmRWOWAH0O3VykZDHgxK'
 setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
 
 # Functions ---------------------------------------------------
